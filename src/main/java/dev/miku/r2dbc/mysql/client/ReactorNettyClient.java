@@ -38,7 +38,7 @@ import reactor.core.publisher.EmitterProcessor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.SynchronousSink;
-import reactor.extra.processor.WorkQueueProcessor;
+import reactor.extra.processor.TopicProcessor;
 import reactor.netty.Connection;
 import reactor.netty.FutureMono;
 import reactor.util.context.Context;
@@ -67,9 +67,9 @@ final class ReactorNettyClient implements Client {
 
     private final ConnectionContext context;
 
-    private final WorkQueueProcessor<ClientMessage> requestProcessor = WorkQueueProcessor.create();
+    private final TopicProcessor<ClientMessage> requestProcessor = TopicProcessor.create();
 
-    private final WorkQueueProcessor<ServerMessage> responseProcessor = WorkQueueProcessor.create();
+    private final TopicProcessor<ServerMessage> responseProcessor = TopicProcessor.create();
 
     private final RequestQueue requestQueue = new RequestQueue();
 
