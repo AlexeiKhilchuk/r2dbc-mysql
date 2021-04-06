@@ -38,6 +38,7 @@ import reactor.core.publisher.EmitterProcessor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.SynchronousSink;
+import reactor.core.scheduler.Schedulers;
 import reactor.netty.Connection;
 import reactor.netty.FutureMono;
 import reactor.util.context.Context;
@@ -100,7 +101,6 @@ final class ReactorNettyClient implements Client {
         }
 
         ResponseSink sink = new ResponseSink();
-
         connection.inbound().receiveObject()
             .doOnNext(it -> {
                 if (it instanceof ServerMessage) {
@@ -149,7 +149,7 @@ final class ReactorNettyClient implements Client {
                 .doOnDiscard(ReferenceCounted.class, RELEASE);
 
             requestQueue.submit(RequestTask.wrap(request, sink, responses));
-        }).flatMapMany(identity());
+        }).flatMapMany(identity()).publishOn(Schedulers.boundedElastic());
     }
 
     @Override
@@ -186,7 +186,7 @@ final class ReactorNettyClient implements Client {
             requestQueue.submit(RequestTask.wrap(exchangeable, sink, OperatorUtils.discardOnCancel(responses)
                 .doOnDiscard(ReferenceCounted.class, RELEASE)
                 .doOnCancel(exchangeable::dispose)));
-        }).flatMapMany(identity());
+        }).flatMapMany(identity()).publishOn(Schedulers.boundedElastic());
     }
 
     @Override
