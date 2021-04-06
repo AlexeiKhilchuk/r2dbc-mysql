@@ -38,7 +38,7 @@ import reactor.core.publisher.EmitterProcessor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.SynchronousSink;
-import reactor.core.scheduler.Schedulers;
+import reactor.extra.processor.WorkQueueProcessor;
 import reactor.netty.Connection;
 import reactor.netty.FutureMono;
 import reactor.util.context.Context;
@@ -67,9 +67,9 @@ final class ReactorNettyClient implements Client {
 
     private final ConnectionContext context;
 
-    private final EmitterProcessor<ClientMessage> requestProcessor = EmitterProcessor.create(false);
+    private final WorkQueueProcessor<ClientMessage> requestProcessor = WorkQueueProcessor.create();
 
-    private final EmitterProcessor<ServerMessage> responseProcessor = EmitterProcessor.create(false);
+    private final WorkQueueProcessor<ServerMessage> responseProcessor = WorkQueueProcessor.create();
 
     private final RequestQueue requestQueue = new RequestQueue();
 
@@ -149,7 +149,7 @@ final class ReactorNettyClient implements Client {
                 .doOnDiscard(ReferenceCounted.class, RELEASE);
 
             requestQueue.submit(RequestTask.wrap(request, sink, responses));
-        }).flatMapMany(identity()).publishOn(Schedulers.boundedElastic());
+        }).flatMapMany(identity());
     }
 
     @Override
@@ -186,7 +186,7 @@ final class ReactorNettyClient implements Client {
             requestQueue.submit(RequestTask.wrap(exchangeable, sink, OperatorUtils.discardOnCancel(responses)
                 .doOnDiscard(ReferenceCounted.class, RELEASE)
                 .doOnCancel(exchangeable::dispose)));
-        }).flatMapMany(identity()).publishOn(Schedulers.boundedElastic());
+        }).flatMapMany(identity());
     }
 
     @Override
