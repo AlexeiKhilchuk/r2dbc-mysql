@@ -67,9 +67,9 @@ final class ReactorNettyClient implements Client {
 
     private final ConnectionContext context;
 
-    private final TopicProcessor<ClientMessage> requestProcessor = TopicProcessor.create();
+    private final EmitterProcessor<ClientMessage> requestProcessor = EmitterProcessor.create(2048, false);
 
-    private final TopicProcessor<ServerMessage> responseProcessor = TopicProcessor.create();
+    private final EmitterProcessor<ServerMessage> responseProcessor = EmitterProcessor.create(2048, false);
 
     private final RequestQueue requestQueue = new RequestQueue();
 
